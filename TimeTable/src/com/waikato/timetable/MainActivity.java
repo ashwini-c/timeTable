@@ -14,9 +14,13 @@ import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.DataSetObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
@@ -53,7 +58,7 @@ public class MainActivity extends Activity {
 	ListView list;
 	ArrayList< String> nameList = new ArrayList<String>();
 	ArrayList< String> codeList = new ArrayList<String>();
-	ListAdapter adapter;
+	PaperlistAdapter adapter;
 	Spinner dropdown;
 
 	@Override
@@ -130,9 +135,9 @@ public class MainActivity extends Activity {
 				else
 				{
 					if(format.equals("code"))
-						new searchTimeTableByCode().execute();
+						searchPaper();
 					else if(format.equals("name"))
-						new searchTimeTableByName().execute();
+						searchPaper();
 				}
 
 
@@ -161,95 +166,15 @@ public class MainActivity extends Activity {
 				else
 				{
 					format = "name";
-					new searchTimeTableByName().execute();
+					searchPaper();
 				}
 			}
 		});
 
 		list = (ListView)findViewById(R.id.listView1);
 
-		adapter = new ListAdapter() {
-			private LayoutInflater mInflater;
 
-			@Override
-			public void unregisterDataSetObserver(DataSetObserver arg0) {
-				// TODO Auto-generated method stub
 
-			}
-
-			@Override
-			public void registerDataSetObserver(DataSetObserver arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public boolean isEmpty() {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public boolean hasStableIds() {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public int getViewTypeCount() {
-				// TODO Auto-generated method stub
-				return nameList.size();
-			}
-
-			@Override
-			public View getView(int pos, View convertView, ViewGroup parent) {
-				View view = null;
-				mInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				view = mInflater.inflate(R.layout.list_item,null);
-				TextView name = (TextView)view.findViewById(R.id.textView1);
-				TextView code = (TextView)view.findViewById(R.id.textView2);
-				name.setText(nameList.get(pos));
-				code.setText(codeList.get(pos));
-				return view;
-
-			}
-
-			@Override
-			public int getItemViewType(int arg0) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-
-			@Override
-			public long getItemId(int arg0) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-
-			@Override
-			public Object getItem(int arg0) {
-				// TODO Auto-generated method stub
-				return nameList.get(arg0);
-			}
-
-			@Override
-			public int getCount() {
-				// TODO Auto-generated method stub
-				return nameList.size();
-			}
-
-			@Override
-			public boolean isEnabled(int position) {
-				// TODO Auto-generated method stub
-				return true;
-			}
-
-			@Override
-			public boolean areAllItemsEnabled() {
-				// TODO Auto-generated method stub
-				return true;
-			}
-		};
 		list.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -257,7 +182,7 @@ public class MainActivity extends Activity {
 					long arg3) {
 				data= codeList.get(pos);
 				format = "code";
-				new searchTimeTableByCode().execute();
+				searchPaper();
 
 			}
 		});
@@ -265,166 +190,69 @@ public class MainActivity extends Activity {
 
 	}
 
-	private class searchTimeTableByCode extends AsyncTask<Void, Void, Void> {
 
-		@Override
-		protected Void doInBackground(Void... params) {
-			try
-			{
-				Document doc = Jsoup.connect(urlCode+data+url1+format+url2).get();
+	private void searchPaper()
+	{
 
-				Elements err = doc.select("div[class=error]");
-				Log.d("ashwini"," err "+ err.toString());
-				if(!(err.toString().isEmpty()))
-				{
-					resulttxt = "Sorry, there were no timetable paper events found for "+data+". Try again with correct code";
-					return null;
-				}
-				//Elements elm = doc.select("table[class=results table]");
-				Elements elm = doc.select("tr[class=odd]");
-				resulttxt = elm.toString();
-				Elements elm1 = doc.select("tr[class=even]");
-				resulttxt = resulttxt+elm1.toString();
+		mProgress  = new ProgressDialog(MainActivity.this);
+		mProgress.setTitle("WAIKATO TIMETABLE");
+		mProgress.setIndeterminate(false);
+		mProgress.setCancelable(false);
+		mProgress.setMessage("Loading..........");
+		mProgress.show();
+		Intent intent = new Intent(getApplicationContext(), TimetableClient.class);
+		intent.putExtra(TimetableClient.REQUEST_DATA, data);
+		intent.putExtra(TimetableClient.REQUEST_FORMAT, format);
+		intent.putExtra(TimetableClient.RESPONSE_RECEIVER, result_receiver);
+		startService(intent);
+	}
 
+
+
+	private ResultReceiver result_receiver = new ResultReceiver(new Handler())
+	{
+		protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+			switch (resultCode) {
+			case -1:
+				alert.show();
+				break;
+			case 0:
+			case 1:
+				resulttxt=resultData.getString(TimetableClient.RESPONSE_MESSAGE);
+				setResultCode();
+				break;
+			case 2:
+				nameList=resultData.getStringArrayList(TimetableClient.RESPONSE_NAMELIST);
+				codeList=resultData.getStringArrayList(TimetableClient.RESPONSE_CODELIST);
+				setResultName();
+				break;
+
+			default:
+				break;
 			}
-			catch(Exception e)
-			{
-				Log.d("ashwini "," "+ e.getMessage());
 
 
-				context.runOnUiThread(new Runnable() 
-
-				{
-					public void run()
-					{
-						//Do your UI operations like dialog opening or Toast here
-						alert.show();
-					}
-				});
-
-
-
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-			t1.setVisibility(View.VISIBLE);
-
-			t1.setText(resulttxt);
-			list.setVisibility(View.GONE);
 			mProgress.dismiss();
-		}
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			mProgress  = new ProgressDialog(MainActivity.this);
-			mProgress.setTitle("WAIKATO TIMETABLE");
-			mProgress.setIndeterminate(false);
-			mProgress.setCancelable(false);
-			mProgress.setMessage("Loading..........");
-			mProgress.show();
-		}
 
+
+		}
+	};
+	public void setResultCode()
+	{
+		t1.setVisibility(View.VISIBLE);
+
+		t1.setText(resulttxt);
+		list.setVisibility(View.GONE);
 	}
 
-	private class searchTimeTableByName extends AsyncTask<Void, Void, Void> {
-
-		@Override
-		protected Void doInBackground(Void... params) {
-			try
-			{
-				Document doc = Jsoup.connect(urlCode+data+url1+format+url2).get();
-
-				Elements err = doc.select("div[class=error]");
-				Log.d("ashwini"," err "+ err.toString());
-				if(!(err.toString().isEmpty()))
-				{
-					resulttxt = "Sorry, there were no timetable paper events found for "+data+". Try again with correct code";
-					return null;
-				}
-				Log.d("ashwini", "url "+urlCode+data+url1+format+url2);
-
-				Elements elm = doc.select("table[class=results table]");
-				Element fir=  elm.get(0);
-
-				//t1.setText(elm.toString());
-				resulttxt = fir.toString();
-				Log.d("ashwini", "sizee "+fir.children().get(0).children().size());
-				Elements table = fir.children().get(0).children();
-				int tableSize = table.size();
-				nameList.clear();
-				codeList.clear();
-				for(int i = 1;i<tableSize;i++)
-				{
-					String name  = table.get(i).children().get(0).children().get(1).text();
-					String code = table.get(i).children().get(1).text();
-					Log.d("ashwini", "name "+ name);
-					Log.d("ashwini", "code "+ code);
-
-					nameList.add(name);
-					codeList.add(code);
-
-				}
-
-			}
-			catch(Exception e)
-			{
-				context.runOnUiThread(new Runnable() 
-
-				{
-					public void run()
-					{
-						//Do your UI operations like dialog opening or Toast here
-						alert.show();
-					}
-				});
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-			t1.setVisibility(View.GONE);
-			list.setVisibility(View.VISIBLE);
-			list.setAdapter(adapter);
-			mProgress.dismiss();
-		}
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			mProgress  = new ProgressDialog(MainActivity.this);
-			mProgress.setTitle("WAIKATO TIMETABLE");
-			mProgress.setIndeterminate(false);
-			mProgress.setCancelable(false);
-			mProgress.setMessage("Loading..........");
-			mProgress.show();
-		}
-
+	public void setResultName()
+	{
+		t1.setVisibility(View.GONE);
+		list.setVisibility(View.VISIBLE);
+		adapter = new PaperlistAdapter(getApplicationContext(),nameList,codeList);
+		list.setAdapter(adapter);
+		((PaperlistAdapter)list.getAdapter()).notifyDataSetChanged();
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
 
 }
