@@ -55,7 +55,6 @@ public class MainActivity extends Activity {
 	String format = "code";
 	AlertDialog.Builder alert;
 	Activity context;
-	ListView list;
 	ArrayList< String> nameList = new ArrayList<String>();
 	ArrayList< String> codeList = new ArrayList<String>();
 	PaperlistAdapter adapter;
@@ -171,23 +170,6 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		list = (ListView)findViewById(R.id.listView1);
-
-
-
-		list.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int pos,
-					long arg3) {
-				data= codeList.get(pos);
-				format = "code";
-				searchPaper();
-
-			}
-		});
-
-
 	}
 
 
@@ -240,19 +222,44 @@ public class MainActivity extends Activity {
 	};
 	public void setResultCode()
 	{
-		t1.setVisibility(View.VISIBLE);
+
 
 		t1.setText(resulttxt);
-		list.setVisibility(View.GONE);
 	}
 
 	public void setResultName()
 	{
-		t1.setVisibility(View.GONE);
-		list.setVisibility(View.VISIBLE);
+		/*t1.setVisibility(View.GONE);
+		list.setVisibility(View.VISIBLE);*/
 		adapter = new PaperlistAdapter(getApplicationContext(),nameList,codeList);
-		list.setAdapter(adapter);
-		((PaperlistAdapter)list.getAdapter()).notifyDataSetChanged();
+		//list.setAdapter(adapter);
+		//((PaperlistAdapter)list.getAdapter()).notifyDataSetChanged();
+
+		AlertDialog.Builder builderSingle = new AlertDialog.Builder(
+				context);
+		builderSingle.setIcon(R.drawable.ic_launcher);
+		builderSingle.setTitle("Select One Paper");
+
+		builderSingle.setNegativeButton("cancel",
+				new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		}
+				);
+
+		builderSingle.setAdapter(adapter,
+				new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				data= codeList.get(which);
+				format = "code";
+				searchPaper();}
+		});
+		builderSingle.show();
 	}
 
 }
