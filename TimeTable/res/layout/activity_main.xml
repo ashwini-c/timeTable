@@ -17,42 +17,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-            <EditText
-                android:id="@+id/ed1"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content" />
-
-            <Button
-                android:id="@+id/b1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/ed1"
-                android:text="Search" />
-
-            <Spinner
-                android:id="@+id/spinner1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_toRightOf="@+id/ed1"
-                android:background="@android:drawable/btn_dropdown"
-                android:spinnerMode="dropdown" />
-
-            <EditText
-                android:id="@+id/ed2"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/ed1" />
-
-            <Button
-                android:id="@+id/b2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/ed1"
-                android:layout_marginLeft="10dp"
-                android:layout_toRightOf="@+id/ed2"
-                android:text="Search by name" />
-
             <TextView
                 android:id="@+id/textview"
                 android:layout_width="wrap_content"

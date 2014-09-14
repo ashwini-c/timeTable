@@ -3,51 +3,29 @@ package com.waikato.timetable;
 
 import java.util.ArrayList;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.DataSetObserver;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.Spinner;
+import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.os.Build;
+import android.widget.SearchView.OnQueryTextListener;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnQueryTextListener{
 
-	String urlCode = "http://timetable.waikato.ac.nz/perl-bin/timetable.pl?term=";
-	String url1 = "&by=";
-	String url2 = "&year=2014#results";
-	EditText e1,e2;
-	Button b1,b2;
 	TextView t1;
 	String data;
 	ProgressDialog mProgress;
@@ -58,7 +36,6 @@ public class MainActivity extends Activity {
 	ArrayList< String> nameList = new ArrayList<String>();
 	ArrayList< String> codeList = new ArrayList<String>();
 	PaperlistAdapter adapter;
-	Spinner dropdown;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,40 +43,7 @@ public class MainActivity extends Activity {
 		context= MainActivity.this;
 		setContentView(R.layout.activity_main);
 
-		dropdown = (Spinner)findViewById(R.id.spinner1);
-		String[] items = new String[]{"By Code", "By Name"};
-		ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
-		dropdown.setAdapter(adapter1);
-		dropdown.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int pos, long arg3) {
-				// TODO Auto-generated method stub
-				if(pos == 0)
-				{
-					format="code";
-				}
-				else if( pos == 1)
-				{
-					format = "name";
-				}
-
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-				// TODO Auto-generated method stub
-
-			}
-		});
-		e1 = (EditText)findViewById(R.id.ed1);
-		e2 = (EditText)findViewById(R.id.ed2);
-		b1 =(Button)findViewById(R.id.b1);
-		b2 = (Button)findViewById(R.id.b2);
 		t1 = (TextView)findViewById(R.id.textview);
-		e2.setVisibility(View.GONE);
-		b2.setVisibility(View.GONE);
 
 		alert = new AlertDialog.Builder(MainActivity.this)
 		.setTitle("Connection failed")
@@ -111,65 +55,6 @@ public class MainActivity extends Activity {
 		})
 
 		.setIcon(android.R.drawable.ic_dialog_alert);
-		b1.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-
-				data = e1.getText().toString();
-				if(data.isEmpty())
-				{
-					new AlertDialog.Builder(MainActivity.this)
-					.setTitle("Empty")
-					.setMessage("Enter a paper code to search")
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) { 
-							// continue with delete
-						}
-					})
-
-					.setIcon(android.R.drawable.ic_dialog_alert)
-					.show();
-				}
-				else
-				{
-					if(format.equals("code"))
-						searchPaper();
-					else if(format.equals("name"))
-						searchPaper();
-				}
-
-
-			}
-		});
-
-		b2.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-				data = e2.getText().toString();
-				if(data.isEmpty())
-				{
-					new AlertDialog.Builder(MainActivity.this)
-					.setTitle("Empty")
-					.setMessage("Enter a paper name to search")
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) { 
-							// continue with delete
-						}
-					})
-
-					.setIcon(android.R.drawable.ic_dialog_alert)
-					.show();
-				}
-				else
-				{
-					format = "name";
-					searchPaper();
-				}
-			}
-		});
-
 	}
 
 
@@ -237,7 +122,7 @@ public class MainActivity extends Activity {
 
 		AlertDialog.Builder builderSingle = new AlertDialog.Builder(
 				context);
-		builderSingle.setIcon(R.drawable.ic_launcher);
+		//builderSingle.setIcon(R.drawable.ic_launcher);
 		builderSingle.setTitle("Select One Paper");
 
 		builderSingle.setNegativeButton("cancel",
@@ -260,6 +145,100 @@ public class MainActivity extends Activity {
 				searchPaper();}
 		});
 		builderSingle.show();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		final MenuItem  search_menu_item = (MenuItem) menu.findItem(R.id.search);
+		SearchView searchView =
+				(SearchView) menu.findItem(R.id.search).getActionView();
+
+		searchView.setOnQueryTextListener(this);
+		searchView.setOnQueryTextFocusChangeListener(new OnFocusChangeListener() {
+
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					search_menu_item.collapseActionView();
+				}
+
+			}
+		});
+
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+
+
+		switch (item.getItemId()) {
+		case R.id.search:
+			Log.d("ashwini","search");
+			return true;
+		case R.id.code:
+			format="code";
+			Log.d("ashwini","code");
+			return true;
+		case R.id.name:
+			format="name";
+			Log.d("ashwini","name");
+			return true;
+		case R.id.menu_overflow:
+			Log.d("ashwini","overflow");
+			return true;
+
+		default:
+			return super.onOptionsItemSelected(item);
+
+		}
+
+	}
+
+
+	@Override
+	public boolean onQueryTextChange(String txt) {
+		Log.d("ashwini","search arg0" +txt);
+		return true;
+	}
+
+
+	@Override
+	public boolean onQueryTextSubmit(String txt) {
+		View searchView =findViewById(R.id.search);
+		searchView.clearFocus();
+		InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(( searchView).getWindowToken(), 0);
+
+		data = txt;
+		if(data.isEmpty())
+		{
+			new AlertDialog.Builder(MainActivity.this)
+			.setTitle("Empty")
+			.setMessage("Enter a paper code to search")
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) { 
+					// continue with delete
+				}
+			})
+
+			.setIcon(android.R.drawable.ic_dialog_alert)
+			.show();
+		}
+		else
+		{
+			if(format.equals("code"))
+				searchPaper();
+			else if(format.equals("name"))
+				searchPaper();
+		}
+
+
+
+
+		return true;
 	}
 
 }
