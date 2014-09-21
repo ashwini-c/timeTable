@@ -2,13 +2,14 @@ package com.waikato.timetable;
 
 
 import java.util.ArrayList;
-
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,13 +21,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.TextView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnQueryTextListener{
 
 	TextView t1;
+	ListView list;
 	String data;
 	ProgressDialog mProgress;
 	String resulttxt;
@@ -36,15 +41,64 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 	ArrayList< String> nameList = new ArrayList<String>();
 	ArrayList< String> codeList = new ArrayList<String>();
 	PaperlistAdapter adapter;
+	TimetableListAdapter listAdapter;
+	List<TimetableData> timeTableData = new ArrayList<TimetableData>();
+	private TimeTableDataSource datasource;
+	ArrayList< String> eventList = new ArrayList<String>();
+	ArrayList< String> dayList = new ArrayList<String>();
+	ArrayList< String> startList = new ArrayList<String>();
+	ArrayList< String> endList = new ArrayList<String>();
+	ArrayList< String> locList = new ArrayList<String>();
+	String name;
+	int total;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		context= MainActivity.this;
 		setContentView(R.layout.activity_main);
-
+		datasource = new TimeTableDataSource(this);
+		datasource.open();
+		timeTableData = datasource.getAllTimetableData();
+		listAdapter = new TimetableListAdapter(getApplicationContext(), timeTableData);
 		t1 = (TextView)findViewById(R.id.textview);
+		list = (ListView)findViewById(R.id.list);
+		list.setAdapter(listAdapter);
+		list.setOnItemLongClickListener(new OnItemLongClickListener() {
 
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+				final int pos = arg2;
+				AlertDialog.Builder alert= new AlertDialog.Builder(MainActivity.this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle("Delete Paper")
+				.setMessage("Are you sure?")
+				.setNegativeButton(android.R.string.cancel, new OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+
+
+					}
+				})
+				.setPositiveButton(android.R.string.ok, new OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						TimetableData t = (TimetableData) list.getAdapter().getItem(pos);
+						datasource.deleteTimetableData(t);
+						timeTableData = datasource.getAllTimetableData();
+						listAdapter.setData(timeTableData);
+						list.setAdapter(listAdapter);
+
+					}
+				});
+				alert.show();
+
+				return true;
+			}
+		});
 		alert = new AlertDialog.Builder(MainActivity.this)
 		.setTitle("Connection failed")
 		.setMessage("Check your internet connection and try again.")
@@ -86,7 +140,13 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 				break;
 			case 0:
 			case 1:
-				resulttxt=resultData.getString(TimetableClient.RESPONSE_MESSAGE);
+				name=resultData.getString(TimetableClient.RESPONSE_MESSAGE);
+				total=resultData.getInt(TimetableClient.RESPONSE_TOTAL);
+				eventList= resultData.getStringArrayList(TimetableClient.RESPONSE_eventList);
+				dayList= resultData.getStringArrayList(TimetableClient.RESPONSE_dayList);
+				startList= resultData.getStringArrayList(TimetableClient.RESPONSE_startList);
+				endList= resultData.getStringArrayList(TimetableClient.RESPONSE_endList);
+				locList= resultData.getStringArrayList(TimetableClient.RESPONSE_locList);
 				setResultCode();
 				break;
 			case 2:
@@ -109,7 +169,11 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 	{
 
 
-		t1.setText(resulttxt);
+		//t1.setText(name);
+		datasource.createTimetableData(name, total, eventList, dayList, startList, endList, locList);
+		timeTableData = datasource.getAllTimetableData();
+		listAdapter.setData(timeTableData);
+		list.setAdapter(listAdapter);
 	}
 
 	public void setResultName()

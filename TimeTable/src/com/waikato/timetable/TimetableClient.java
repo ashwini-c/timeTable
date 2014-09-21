@@ -23,11 +23,22 @@ public class TimetableClient extends IntentService {
 	public static final String RESPONSE_CODELIST = "myResponseCode";
 	public static final String RESPONSE_RECEIVER = "myResponseReceiver";
 	public static final String RESPONSE_MESSAGE = "myResponseMessage";
+	public static final String RESPONSE_TOTAL = "myResponseMessageTOTAL";
+	public static final String RESPONSE_eventList = "myResponseMessageeventList";
+	public static final String RESPONSE_dayList = "myResponseMessagedayList";
+	public static final String RESPONSE_startList = "myResponseMessagestartList";
+	public static final String RESPONSE_endList = "myResponseMessageendList";
+	public static final String RESPONSE_locList = "myResponseMessagelocList";
 	public static final String urlCode = "http://timetable.waikato.ac.nz/perl-bin/timetable.pl?term=";
 	public static final String url1 = "&by=";
 	public static final String url2 = "&year=2014#results";
 	ArrayList< String> nameList = new ArrayList<String>();
 	ArrayList< String> codeList = new ArrayList<String>();
+	ArrayList< String> eventList = new ArrayList<String>();
+	ArrayList< String> dayList = new ArrayList<String>();
+	ArrayList< String> startList = new ArrayList<String>();
+	ArrayList< String> endList = new ArrayList<String>();
+	ArrayList< String> locList = new ArrayList<String>();
 	String resulttxt;
 	ResultReceiver receiver;
 
@@ -62,11 +73,36 @@ public class TimetableClient extends IntentService {
 
 			if(format.equals("code"))
 			{
-				Elements elm = doc.select("tr[class=odd]");
-				resulttxt = elm.toString();
-				Elements elm1 = doc.select("tr[class=even]");
-				resulttxt = resulttxt+elm1.toString();
-				b.putString(RESPONSE_MESSAGE, resulttxt);
+				Elements root = doc.select("table[class=results table]");
+				Elements elm = root.select("tr");
+				Log.d("ashwini","size "+elm.size());
+				int total = elm.size() -1;
+				Elements caption = root.select("caption");
+				String name  = caption.get(0).text();
+				Log.d("ashwini","name "+name);
+				eventList.clear();
+				dayList.clear();
+				startList.clear();
+				endList.clear();
+				locList.clear();
+				for(int i=1;i<=total;i++)
+				{
+					Element e = elm.get(i);
+					Elements nodes = e.select("td");
+					eventList.add(nodes.get(5).text());
+					dayList.add(nodes.get(1).text());
+					startList.add(nodes.get(2).text());
+					endList.add(nodes.get(3).text());
+					locList.add(nodes.get(4).text());
+
+				}
+				b.putString(RESPONSE_MESSAGE, name);
+				b.putInt(RESPONSE_TOTAL, total);
+				b.putStringArrayList(RESPONSE_eventList, eventList);
+				b.putStringArrayList(RESPONSE_dayList, dayList);
+				b.putStringArrayList(RESPONSE_startList, startList);
+				b.putStringArrayList(RESPONSE_endList, endList);
+				b.putStringArrayList(RESPONSE_locList, locList);
 				receiver.send(1, b);
 				return;
 			}
