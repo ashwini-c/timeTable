@@ -27,6 +27,11 @@
 
         <service android:name="com.waikato.timetable.TimetableClient" >
         </service>
+
+        <activity
+            android:name="com.waikato.timetable.AssignmentActivity"
+            android:label="@string/title_activity_assignment" >
+        </activity>
     </application>
 
 </manifest>

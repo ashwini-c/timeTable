@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -64,6 +65,21 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 		t1 = (TextView)findViewById(R.id.textview);
 		list = (ListView)findViewById(R.id.list);
 		list.setAdapter(listAdapter);
+		list.setOnItemClickListener(new OnItemClickListener() {
+
+
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				Intent intent = new Intent(getApplicationContext(), AssignmentActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+				intent.putExtra("paperId", datasource.getAllTimetableData().get(arg2).getId());
+				startActivity(intent);
+
+			}
+		});
 		list.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
