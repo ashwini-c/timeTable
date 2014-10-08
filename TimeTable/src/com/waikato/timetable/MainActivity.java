@@ -37,7 +37,8 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 	ProgressDialog mProgress;
 	String resulttxt;
 	String format = "code";
-	AlertDialog.Builder alert;
+	AlertDialog.Builder alert,alert1;
+	AssignmentDataSource source;
 	Activity context;
 	ArrayList< String> nameList = new ArrayList<String>();
 	ArrayList< String> codeList = new ArrayList<String>();
@@ -60,6 +61,8 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 		setContentView(R.layout.activity_main);
 		datasource = new TimeTableDataSource(this);
 		datasource.open();
+		source = new AssignmentDataSource(this);
+		source.open();
 		timeTableData = datasource.getAllTimetableData();
 		listAdapter = new TimetableListAdapter(getApplicationContext(), timeTableData);
 		t1 = (TextView)findViewById(R.id.textview);
@@ -74,8 +77,9 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 					long arg3) {
 				Intent intent = new Intent(getApplicationContext(), AssignmentActivity.class);
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
+				Log.d("ashwin","paper id 0 "+datasource.getAllTimetableData().get(arg2).getId());
 				intent.putExtra("paperId", datasource.getAllTimetableData().get(arg2).getId());
+
 				startActivity(intent);
 
 			}
@@ -125,6 +129,16 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 		})
 
 		.setIcon(android.R.drawable.ic_dialog_alert);
+		alert1 = new AlertDialog.Builder(MainActivity.this)
+		.setTitle("No results found")
+		
+		.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) { 
+				// continue with delete
+			}
+		})
+
+		.setIcon(android.R.drawable.ic_dialog_alert);
 	}
 
 
@@ -155,6 +169,9 @@ public class MainActivity extends Activity implements OnQueryTextListener{
 				alert.show();
 				break;
 			case 0:
+				alert1.setMessage(resultData.getString(TimetableClient.RESPONSE_MESSAGE));
+				alert1.show();
+				break;
 			case 1:
 				name=resultData.getString(TimetableClient.RESPONSE_MESSAGE);
 				total=resultData.getInt(TimetableClient.RESPONSE_TOTAL);

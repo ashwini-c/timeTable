@@ -3,9 +3,10 @@
     tools:context="com.waikato.timetable.AssignmentActivity" >
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:id="@+id/menu_add"
+        android:icon="@android:drawable/ic_menu_add"
+        android:orderInCategory="11111"
+        android:showAsAction="always">
+    </item>
 
 </menu>

@@ -6,5 +6,9 @@
     <string name="action_settings">Settings</string>
     <string name="search_title">Search</string>
     <string name="title_activity_assignment">Assignments</string>
+    <string name="title_activity_add_assignment">Add Assignment</string>
+    <string name="enter_time">Enter Due Date</string>
+    <string name="enter_title">Enter Assignment title</string>
+    <string name="assign">Add Assignment Details</string>
 
 </resources>

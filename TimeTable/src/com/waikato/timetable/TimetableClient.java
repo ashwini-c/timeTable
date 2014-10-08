@@ -1,5 +1,6 @@
 package com.waikato.timetable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.jsoup.Jsoup;
@@ -57,10 +58,19 @@ public class TimetableClient extends IntentService {
 		receiver = intent.getParcelableExtra(RESPONSE_RECEIVER);
 		resulttxt="";
 		Bundle b = new Bundle();
-		try{
-			Document doc = Jsoup.connect(urlCode+data+url1+format+url2).get();
+		
+			Document doc = null;
+			try {
+				doc = Jsoup.connect(urlCode+data+url1+format+url2).get();
+				Log.d("ashwini","url "+urlCode+data+url1+format+url2);
+			} catch (IOException e1) {
+				Log.d("ashwini"," ioexception");
+				e1.printStackTrace();
+				receiver.send(-1, b);
+				return;
+			}
 
-			Elements err = doc.select("div[class=error]");
+			Elements err = doc.select("div[id=results]");
 			Log.d("ashwini"," err "+ err.toString());
 			if(!(err.toString().isEmpty()))
 			{
@@ -73,7 +83,8 @@ public class TimetableClient extends IntentService {
 
 			if(format.equals("code"))
 			{
-				Elements root = doc.select("table[class=results table]");
+				Log.d("ashwini","doc "+  doc.toString());
+				Elements root = doc.select("table[class=results table table-bordered table-striped]");
 				Elements elm = root.select("tr");
 				Log.d("ashwini","size "+elm.size());
 				int total = elm.size() -1;
@@ -108,13 +119,14 @@ public class TimetableClient extends IntentService {
 			}
 			else if(format.equals("name"))
 			{
-				Elements elm = doc.select("table[class=results table]");
+				Elements elm = doc.select("table[class=table table-bordered table-striped]");
 				Element fir=  elm.get(0);
-
+				//Log.d("ashwini","doc elm "+  elm.toString());
 				//t1.setText(elm.toString());
 				resulttxt = fir.toString();
-				Log.d("ashwini", "sizee "+fir.children().get(0).children().size());
-				Elements table = fir.children().get(0).children();
+				Log.d("ashwini", "sizee "+fir.select("tr"));
+				Elements table = fir.select("tr");
+				Log.d("ashwini","doc elm "+  table.toString());
 				int tableSize = table.size();
 				nameList.clear();
 				codeList.clear();
@@ -135,12 +147,8 @@ public class TimetableClient extends IntentService {
 				receiver.send(2, b);
 				return;
 			}
-		}
-		catch(Exception e)
-		{
-			receiver.send(-1, b);
-			return;
-		}
+		
+		
 
 
 	}
