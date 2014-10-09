@@ -28,7 +28,7 @@ public class AssignmentDataSource {
 	int sYear,sMonth,sDay,eYear,eMonth,eDay,eventID;
 	Context ctx;
 	private String[] allColumns = { AssignmentDBHelper.COLUMN_ID,
-			AssignmentDBHelper.COLUMN_PAPERID,AssignmentDBHelper.COLUMN_EVENTID,AssignmentDBHelper.COLUMN_TITLE,AssignmentDBHelper.COLUMN_TIME};
+			AssignmentDBHelper.COLUMN_PAPERID,AssignmentDBHelper.COLUMN_EVENTID,AssignmentDBHelper.COLUMN_TITLE,AssignmentDBHelper.COLUMN_TIME,AssignmentDBHelper.COLUMN_DESC};
 
 	public AssignmentDataSource(Context context) {
 		ctx = context;
@@ -43,7 +43,7 @@ public class AssignmentDataSource {
 		dbHelper.close();
 	}
 
-	public AssignmentData createAssignmentData(int paperId,String title,String time,Activity activity) 
+	public AssignmentData createAssignmentData(int paperId,String title,String time,String desc,Activity activity) 
 	{
 
 		Log.d("ashwin12"," title "+ title + " time "+time);
@@ -107,6 +107,7 @@ public class AssignmentDataSource {
 		values.put(AssignmentDBHelper.COLUMN_EVENTID, eventID);
 		values.put(AssignmentDBHelper.COLUMN_TITLE, title);
 		values.put(AssignmentDBHelper.COLUMN_TIME, time);
+		values.put(AssignmentDBHelper.COLUMN_DESC, desc);
 		long insertId = database.insert(AssignmentDBHelper.TABLE_DATA, null,
 				values);
 		Cursor cursor = database.query(AssignmentDBHelper.TABLE_DATA,
@@ -170,6 +171,7 @@ public class AssignmentDataSource {
 		data.setEventId(cursor.getInt(2));
 		data.setTitle(cursor.getString(3));
 		data.setTime(cursor.getString(4));
+		data.setDesc(cursor.getString(5));
 
 		return data;
 	}

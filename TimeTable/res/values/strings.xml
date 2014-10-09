@@ -7,8 +7,10 @@
     <string name="search_title">Search</string>
     <string name="title_activity_assignment">Assignments</string>
     <string name="title_activity_add_assignment">Add Assignment</string>
-    <string name="enter_time">Enter Due Date</string>
+    <string name="enter_time">Add Due Date</string>
     <string name="enter_title">Enter Assignment title</string>
+    <string name="enter_desc">Enter Assignment description</string>
     <string name="assign">Add Assignment Details</string>
+    <string name="title_activity_assignment_detail">Assignment Detail</string>
 
 </resources>

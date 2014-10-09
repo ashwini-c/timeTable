@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class AssignmentData {
 	private long id;
-	private String title,time;
+	private String title,time,desc;
 	private int paperid,eventid;
 
 	public long getId() {
@@ -22,6 +22,13 @@ public class AssignmentData {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
 	}
 	public String getTime() {
 		return time;

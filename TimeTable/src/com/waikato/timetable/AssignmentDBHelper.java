@@ -13,9 +13,10 @@ public class AssignmentDBHelper extends SQLiteOpenHelper {
 	public static final String COLUMN_EVENTID = "COLUMN_EVENTID";
 	public static final String COLUMN_TITLE = "COLUMN_TITLE";
 	public static final String COLUMN_TIME = "COLUMN_TIME";
+	public static final String COLUMN_DESC = "COLUMN_DESC";
 
 	private static final String DATABASE_NAME = "data1.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 
 	// Database creation sql statement
 	private static final String DATABASE_CREATE = "create table "
@@ -23,6 +24,7 @@ public class AssignmentDBHelper extends SQLiteOpenHelper {
 			+ " integer primary key autoincrement, " + COLUMN_PAPERID
 			+ " integer, "+COLUMN_EVENTID + " integer, " + COLUMN_TITLE
 			+ " text not null, " + COLUMN_TIME
+			+ " text not null, " + COLUMN_DESC
 			+ " text not null);" ;
 
 	public AssignmentDBHelper(Context context) {

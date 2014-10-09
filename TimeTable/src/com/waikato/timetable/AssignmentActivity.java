@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.os.Build;
@@ -79,8 +80,23 @@ public class AssignmentActivity extends Activity {
 			}
 		});
 
+		list.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int pos,
+					long arg3) {
+				Intent intent = new Intent(getApplicationContext(), AssignmentDetail.class);
+				intent.putExtra("title", data.get(pos).getTitle());
+				intent.putExtra("desc", data.get(pos).getDesc());
+				intent.putExtra("time", data.get(pos).getTime());
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
+
+			}
+		});
+
 	}
-	
+
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
